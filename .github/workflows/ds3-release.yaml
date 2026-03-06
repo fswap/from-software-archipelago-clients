@@ -148,8 +148,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        path: ds3-archipelago
+      with: {path: client}
 
     - uses: actions/checkout@v4
       with:
@@ -173,7 +172,7 @@ jobs:
     - name: Assemble Windows release
       run: |
         mkdir "$dir"
-        cp -r ds3-archipelago/release/* "$dir"
+        cp -r client/crates/ds3-archipelago/release/* "$dir"
         mkdir -p "$dir"/randomizer/spoiler_logs
         mv SoulsRandomizers/dist "$dir/randomizer/dist"
         mv "$dir/randomizer/dist/Presets" "$dir/randomizer/presets"
@@ -215,7 +214,7 @@ jobs:
 
     - name: Assemble Linux release
       run: |
-        cp -r ds3-archipelago/release/* "$dir"
+        cp -r client/crates/ds3-archipelago/release/* "$dir"
         rm "$dir/launch-ds3.bat"
         rm -r "$dir/bin"
         mv me3-linux/bin "$dir/bin"
@@ -224,6 +223,7 @@ jobs:
 
     - uses: softprops/action-gh-release@v2
       with:
+        name: "DS3 Archipelago ${{ needs.version.outputs.version }}"
         body_path: ${{ env.dir }}/README.txt
         prerelease: ${{ needs.version.outputs.prerelease }}
         files: |
