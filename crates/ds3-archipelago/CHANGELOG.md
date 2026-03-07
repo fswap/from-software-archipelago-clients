@@ -1,3 +1,7 @@
+## 4.0.0-rc.8
+
+* Update the ME3 config to refer to `ds3_archipelago.dll`.
+
 ## 4.0.0-rc.7
 
 * Use the latest `archipelago_rs` package.

@@ -4,7 +4,7 @@ profileVersion = "v1"
 game = "darksouls3"
 
 [[natives]]
-path = "archipelago.dll"
+path = "ds3_archipelago.dll"
 
 [[packages]]
 path = "randomizer"

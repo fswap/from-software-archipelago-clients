@@ -56,7 +56,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: archipelago.dll
+        name: sdt_archipelago.dll
         path: target/release/sdt_archipelago.dll
         if-no-files-found: error
 
@@ -183,10 +183,10 @@ jobs:
         mv me3-windows/bin "$dir/bin"
         rm "$dir/launch-sekiro.sh"
 
-    - name: Download archipelago.dll
+    - name: Download sdt_archipelago.dll
       uses: actions/download-artifact@v4
       with:
-        name: archipelago.dll
+        name: sdt_archipelago.dll
         path: ${{ env.dir }}
 
     - name: Download YAML
