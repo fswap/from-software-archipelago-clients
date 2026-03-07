@@ -1,3 +1,7 @@
+## 4.0.0-rc.5
+
+* Fix a release error where the version number was computed incorrectly.
+
 ## 4.0.0-rc.4
 
 * Enable the DLC by default.

@@ -24,7 +24,7 @@ jobs:
       run: |
         ver="${{ github.ref_name }}"
         if [[ "$ver" == ds3-v* ]]; then
-          ver="${ver:1}"
+          ver="${ver:5}"
         fi
         echo "version=$ver" >> "$GITHUB_OUTPUT"
     - id: prerelease
