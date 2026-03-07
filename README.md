@@ -13,7 +13,7 @@ III Archipelago mod.
 
 ### Other FromSoft Archipelago Clients
 
-This isn't the only Archieplago mod for From Software games! Here are others
+This isn't the only Archipelago mod for From Software games! Here are others
 that I know of:
 
 * [Armored Core](https://github.com/JustinMarshall98/Armored-Core-PSX-Archipelago)

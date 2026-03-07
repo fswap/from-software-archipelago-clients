@@ -12,7 +12,7 @@ use crate::slot_data::{I64Key, SlotData};
 use shared::{Core as SharedCore, CoreBase};
 
 /// The core of the Archipelago mod. This is responsible for running the
-/// non-UI-related game logic and interacting with the Archieplago client.
+/// non-UI-related game logic and interacting with the Archipelago client.
 pub struct Core {
     /// The cross-game core.
     base: CoreBase<SlotData>,

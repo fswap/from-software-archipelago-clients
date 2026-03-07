@@ -39,7 +39,7 @@
 * Fix a bug where, if you load into a save with the overlay collapsed, it won't
   be openable afterwards.
 
-* Ensure that the required Archielago version in the DS3 options template is
+* Ensure that the required Archipelago version in the DS3 options template is
   accurate.
 
 ## 4.0.0-rc.2
