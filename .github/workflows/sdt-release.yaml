@@ -173,7 +173,6 @@ jobs:
         mv SoulsRandomizers/dists "$dir/randomizer/dists"
         mv "$dir/randomizer/dists/Presets" "$dir/randomizer/presets"
         mv "$dir/randomizer/dists/Base/script" "$dir/randomizer/script"
-        mv "$dir/randomizer/dists/Base/msg" "$dir/randomizer/msg"
         mv me3-windows/CHANGELOG.pdf "$dir/ME3-CHANGELOG.pdf"
         mv me3-windows/LICENSE-APACHE "$dir/ME3-LICENSE-APACHE"
         mv me3-windows/LICENSE-MIT "$dir/ME3-LICENSE-MIT"
