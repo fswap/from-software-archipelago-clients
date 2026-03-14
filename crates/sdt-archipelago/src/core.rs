@@ -251,7 +251,11 @@ impl Core {
             return;
         }
 
-        if let Some(item) = client.received_items().first() {
+        if let Some(item) = client
+            .received_items()
+            .iter()
+            .find(|item| item.index() >= save_data.items_granted)
+        {
             let id_key = I64Key(item.item().id());
             let sdt_id = client
                 .slot_data()

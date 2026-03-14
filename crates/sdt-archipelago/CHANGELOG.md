@@ -1,3 +1,7 @@
+## 1.0.0-alpha.4
+
+* Don't grant items from other worlds over and over and over again.
+
 ## 1.0.0-alpha.3
 
 * Put the `msg` directory in the correct location.

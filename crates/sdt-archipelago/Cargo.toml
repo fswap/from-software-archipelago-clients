@@ -1,6 +1,6 @@
 [package]
 name = "sdt-archipelago"
-version = "1.0.0-alpha.3"
+version = "1.0.0-alpha.4"
 edition.workspace = true
 repository.workspace = true
 license.workspace = true
