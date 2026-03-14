@@ -1,0 +1,10 @@
+profileVersion = "v1"
+
+[[supports]]
+game = "sekiro"
+
+[[natives]]
+path = "sdt_archipelago.dll"
+
+[[packages]]
+path = "randomizer"
