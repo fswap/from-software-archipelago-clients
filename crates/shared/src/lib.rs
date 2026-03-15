@@ -6,7 +6,7 @@ use backtrace::Backtrace;
 use chrono::prelude::*;
 use hudhook::Hudhook;
 use log::*;
-use simplelog::{ColorChoice, CombinedLogger, SharedLogger, TermLogger, TerminalMode, WriteLogger};
+use simplelog::{ColorChoice, CombinedLogger, Config, SharedLogger, TermLogger, TerminalMode, WriteLogger};
 use windows::Win32::{Foundation::*, UI::WindowsAndMessaging::MessageBoxW};
 use windows::core::*;
 
@@ -58,47 +58,52 @@ fn message_box(message: impl Into<String>) {
 
 /// Starts the logger which logs to both stdout and a file which users can send
 /// to the devs for debugging.
-pub fn start_logger() {
-    // If there's an error locating the mod directory, try to log to the current
-    // dir instead. Otherwise, ignore the error so we can surface it better
-    // through the UI.
-    if let Ok(dir) = utils::mod_directory() {
-        let _ = start_logger_for_dir(dir);
-        info!("Logger initialized.");
-    } else {
-        let _ = start_logger_for_dir(".");
-        info!("Failed to determine mod directory, logging to current directory instead.");
-    }
-}
+pub fn start_logger(game: String) {
+    let terminal_logger = TermLogger::new(
+        LevelFilter::Warn, 
+        Config::default(),
+        TerminalMode::Mixed, 
+        ColorChoice::Auto
+    );
+    let mut loggers: Vec<Box<dyn SharedLogger>> = vec![terminal_logger];
 
-/// Starts a logger for the given directory.
-fn start_logger_for_dir(dir: impl AsRef<Path>) -> Result<()> {
-    let mut loggers: Vec<Box<dyn SharedLogger>> = vec![TermLogger::new(
-        LevelFilter::Warn,
-        simplelog::Config::default(),
-        TerminalMode::Mixed,
-        ColorChoice::Auto,
-    )];
-    if let Ok(logger) = create_write_logger(dir) {
-        loggers.push(logger);
+    let dir = match utils::mod_directory() {
+        Ok(path) => path,
+        Err(why) => {
+            warn!("Error locating mod directory {} using current dir as default", why);
+            Path::new(".")
+        },
+    };
+
+    let filename = format!("{}-archipelago-{}.log", game, Local::now().format("%Y-%m-%d"));
+
+    if let Ok(file_logger) = create_file_logger(filename, dir) {
+        loggers.push(file_logger);
+    } else {
+        warn!("Error creating file logger at {:?}", dir)
     }
-    CombinedLogger::init(loggers)?;
-    Ok(())
+
+    match CombinedLogger::init(loggers) {
+        Ok(_) => info!("Logger initialized"),
+        Err(why) => error!("Failed to initialize logger {}", why),
+    }
 }
 
 /// Creates a write logger that writes to files in [dir].
-fn create_write_logger(dir: impl AsRef<Path>) -> Result<Box<WriteLogger<fs::File>>> {
+fn create_file_logger(filename: String, dir: impl AsRef<Path>) -> Result<Box<WriteLogger<fs::File>>> {
     let dir = dir.as_ref().join("log");
     fs::create_dir_all(&dir)?;
-    let filename = dir.join(Local::now().format("archipelago-%Y-%m-%d.log").to_string());
-    Ok(WriteLogger::new(
+
+    let logger = WriteLogger::new(
         LevelFilter::Info,
-        simplelog::Config::default(),
+        Config::default(),
         fs::OpenOptions::new()
             .create(true)
             .append(true)
-            .open(filename)?,
-    ))
+            .open(dir.join(filename))?,
+    );
+
+    Ok(logger)
 }
 
 /// Initializes the basic hooks into the underlying rendering system for the

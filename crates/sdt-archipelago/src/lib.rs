@@ -19,7 +19,7 @@ extern "C" fn DllMain(hmodule: HINSTANCE, call_reason: u32) -> bool {
     }
 
     shared::handle_panics();
-    shared::start_logger();
+    shared::start_logger(String::from("sdt"));
 
     // Set up hooks in the main thread to mitigate the risk of the game code
     // executing them while they're being modified.
