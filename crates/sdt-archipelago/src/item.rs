@@ -103,7 +103,7 @@ impl<T: ?Sized + EquipParam> EquipParamExt for T {
     }
 
     fn archipelago_item(&self) -> Option<(ItemId, u32)> {
-        if self.sale_value() == 0 {
+        if self.sell_value() < 1 {
             None
         } else {
             Some((

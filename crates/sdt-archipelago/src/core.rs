@@ -1,4 +1,4 @@
-use std::{collections::HashSet, str::FromStr, time::Instant};
+use std::{str::FromStr, time::Instant};
 
 use anyhow::{Result, bail};
 use archipelago_rs as ap;
@@ -313,7 +313,6 @@ impl Core {
             .items()
             .map(|e| e.item_id)
             .collect::<Vec<_>>();
-        let mut locations = HashSet::<i64>::new();
         for id in ids {
             if !id.is_archipelago() {
                 continue;
@@ -326,7 +325,7 @@ impl Core {
             let row = row.as_dyn();
 
             info!("  Archipelago location: {}", row.archipelago_location_id());
-            locations.insert(row.archipelago_location_id());
+            save_data.locations.insert(row.archipelago_location_id());
 
             if let Some((real_id, quantity)) = row.archipelago_item() {
                 info!("  Converting to {}x {:?}", quantity, real_id);

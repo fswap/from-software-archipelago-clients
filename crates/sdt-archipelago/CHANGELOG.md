@@ -1,3 +1,7 @@
+## 1.0.0-alpha.5
+
+* Send foreign items found in shops to the server rather than crashing.
+
 ## 1.0.0-alpha.4
 
 * Don't grant items from other worlds over and over and over again.
