@@ -1,3 +1,7 @@
+## 4.0.0-rc.10
+
+* Use ModEngine3 version 0.11.0.
+
 ## 4.0.0-rc.9
 
 * Use the proper client version rather than "0.0.0".
