@@ -1,15 +1,10 @@
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
 
 use anyhow::{Error, Result};
 use hudhook::{ImguiRenderLoop, RenderContext};
 use imgui::*;
-use log::*;
 
 use crate::{Core, Game, InputBlocker, InputFlags, overlay::Overlay, utils::PopupModalExt};
-
-/// The duration between debug prints of the frame timing data.
-const TIME_PER_FRAME_PRINT: Duration = Duration::from_secs(5);
 
 /// A wrapper around the rest of the mod's UI that doesn't expect any state to
 /// exist. This allows the full [Overlay] to assume that its [Core] exists while
@@ -33,26 +28,11 @@ pub(crate) struct ErrorDisplay<G: Game> {
 
     /// Whether to display the full error information or just the summary.
     show_full_error: bool,
-
-    /// The time it took us to do mod-specific work over the most recent frames.
-    /// This is cleared each time the average is printed.
-    frame_times: Vec<Duration>,
-
-    /// The time the last frame average was printed.
-    last_frame_printed: Instant,
 }
 
 impl<G: Game> ErrorDisplay<G> {
-    /// Creates a new [ErrorDisplay] that will only ever be run
+    /// Creates a new [ErrorDisplay].
     pub fn new(core: Result<Arc<Mutex<G::Core>>>, input_blocker: G::InputBlocker) -> Self {
-        let frame_times = Vec::with_capacity(
-            // Allocate enough space for 60fps.
-            TIME_PER_FRAME_PRINT
-                .as_millis()
-                .div_ceil((Duration::from_secs(1) / 60).as_millis())
-                .try_into()
-                .unwrap(),
-        );
         match core {
             Ok(core) => Self {
                 input_blocker,
@@ -60,8 +40,6 @@ impl<G: Game> ErrorDisplay<G> {
                 core: Some(core),
                 error: None,
                 show_full_error: false,
-                frame_times,
-                last_frame_printed: Instant::now(),
             },
             Err(error) => Self {
                 input_blocker,
@@ -69,8 +47,6 @@ impl<G: Game> ErrorDisplay<G> {
                 core: None,
                 error: Some(error),
                 show_full_error: false,
-                frame_times,
-                last_frame_printed: Instant::now(),
             },
         }
     }
@@ -121,7 +97,6 @@ impl<G: Game> ErrorDisplay<G> {
 
 impl<G: Game> ImguiRenderLoop for ErrorDisplay<G> {
     fn render(&mut self, ui: &mut Ui) {
-        let start = Instant::now();
         let io = ui.io();
         let mut flag = InputFlags::empty();
         if io.want_capture_mouse {
@@ -149,25 +124,6 @@ impl<G: Game> ImguiRenderLoop for ErrorDisplay<G> {
         }
 
         self.render_error(ui);
-
-        let now = Instant::now();
-        self.frame_times.push(now.duration_since(start));
-        if now.duration_since(self.last_frame_printed) >= TIME_PER_FRAME_PRINT {
-            let frames = u32::try_from(self.frame_times.len()).unwrap();
-            let fps = f64::from(frames) / TIME_PER_FRAME_PRINT.as_secs_f64();
-            let ap_time_per_frame = self.frame_times.iter().copied().sum::<Duration>() / frames;
-            let total_time_per_frame = TIME_PER_FRAME_PRINT / frames;
-            info!(
-                "In last {TIME_PER_FRAME_PRINT:?}: {frames} frames rendered ({:02} FPS), AP took \
-                 {:?}/frame avg ({:.2}% of frame)",
-                fps,
-                ap_time_per_frame,
-                100.0 * (ap_time_per_frame.as_micros() as f64)
-                    / (total_time_per_frame.as_micros() as f64),
-            );
-            self.frame_times.clear();
-            self.last_frame_printed = now;
-        }
     }
 
     fn initialize<'a>(&'a mut self, ctx: &mut Context, _render_context: &'a mut dyn RenderContext) {

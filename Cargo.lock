@@ -1936,6 +1936,7 @@ dependencies = [
  "hudhook",
  "imgui",
  "imgui-sys",
+ "indexmap 2.13.0",
  "log",
  "mint",
  "regex",

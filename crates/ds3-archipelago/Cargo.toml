@@ -27,3 +27,7 @@ serde.workspace = true
 serde_repr.workspace = true
 shared.workspace = true
 windows.workspace = true
+
+[features]
+# Enable runtime profiling
+profile = ["shared/profile"]

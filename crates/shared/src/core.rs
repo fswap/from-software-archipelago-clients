@@ -8,7 +8,7 @@ use log::*;
 use serde::de::DeserializeOwned;
 use ustr::Ustr;
 
-use crate::{Game, config::Config};
+use crate::{Game, SectionProfiler, config::Config};
 
 /// The maximum number of log messages to store.
 ///
@@ -52,6 +52,10 @@ pub struct CoreBase<G: Game, S: DeserializeOwned + Send + 'static> {
     /// The fatal error that this has encountered, if any. If this is not
     /// `None`, most in-game processing will be disabled.
     error: Option<Error>,
+
+    /// A profiler that can be used to track how long various sections of the
+    /// mod take to run.
+    profiler: SectionProfiler,
 }
 
 impl<G: Game, S: DeserializeOwned + Send + 'static> CoreBase<G, S> {
@@ -68,6 +72,7 @@ impl<G: Game, S: DeserializeOwned + Send + 'static> CoreBase<G, S> {
             event_buffer: vec![],
             load_time: None,
             error: None,
+            profiler: Default::default(),
         })
     }
 
@@ -84,6 +89,11 @@ impl<G: Game, S: DeserializeOwned + Send + 'static> CoreBase<G, S> {
         }
 
         ap::Connection::new(config.url(), config.slot(), Some(game), options)
+    }
+
+    /// The section profiler.
+    pub fn profiler(&mut self) -> &mut SectionProfiler {
+        &mut self.profiler
     }
 
     /// Returns the current connection type.

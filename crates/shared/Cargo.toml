@@ -29,3 +29,8 @@ tungstenite = "0.28.0"
 windows.workspace = true
 windows-result = "0.4.1"
 ustr = "1.1.0"
+indexmap = { version = "2.13.0", optional = true }
+
+[features]
+# Enable runtime profiling
+profile = ["indexmap"]

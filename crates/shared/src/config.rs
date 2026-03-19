@@ -1,9 +1,9 @@
-use std::{fs, io, path::PathBuf, marker::PhantomData};
+use std::{fs, io, marker::PhantomData, path::PathBuf};
 
 use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
 
-use crate::{utils, Game};
+use crate::{Game, utils};
 
 /// The configuration file for the Archipelago connection.
 #[derive(Deserialize, Serialize)]

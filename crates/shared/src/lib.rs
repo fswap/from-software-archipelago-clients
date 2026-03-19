@@ -17,12 +17,14 @@ mod error_display;
 mod game;
 mod input_blocker;
 mod overlay;
+mod section_profiler;
 pub mod utils;
 
 pub use core::*;
 use error_display::*;
 pub use game::*;
 pub use input_blocker::*;
+pub(crate) use section_profiler::*;
 
 /// Handle panics by both logging and popping up a message box, which is the
 /// most reliable way to make something visible to the end user.
@@ -125,7 +127,12 @@ pub fn initialize<G: Game>(hmodule: HINSTANCE, blocker: G::InputBlocker) {
             // scheduling the task on the main thread. It seems to work, but
             // really we should probably handle it in the error display.
             if let Err(err) = unsafe {
-                G::run_recurring_task(move || core2.lock().unwrap().update(G::is_main_menu()))
+                G::run_recurring_task(move || {
+                    let mut core2 = core2.lock().unwrap();
+                    prof!(core2.base_mut().profiler(), "AP mod logic", {
+                        core2.update(G::is_main_menu());
+                    });
+                })
             } {
                 core = Err(err);
             }

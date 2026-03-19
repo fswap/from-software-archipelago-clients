@@ -1,3 +1,5 @@
+#[cfg(feature = "profile")]
+use std::time::{Duration, Instant};
 use std::{marker::PhantomData, mem, ptr};
 
 use archipelago_rs::{self as ap, RichText, TextColor};
@@ -7,11 +9,15 @@ use imgui_sys::igSetWindowFocus_Str;
 use log::*;
 use regex_macro::regex;
 
-use crate::{Core, Game};
+use crate::{Core, Game, prof};
 
 mod text_input_history;
 
 use text_input_history::TextInputHistory;
+
+/// The duration between debug prints of the frame timing data.
+#[cfg(feature = "profile")]
+const TIME_PER_FRAME_PRINT: Duration = Duration::from_secs(10);
 
 const GREEN: ImColor32 = ImColor32::from_rgb(0x8A, 0xE2, 0x43);
 const RED: ImColor32 = ImColor32::from_rgb(0xFF, 0x44, 0x44);
@@ -76,6 +82,10 @@ pub struct Overlay<G: Game> {
     /// resize when entering and exiting compact mode.
     previous_size: Option<[f32; 2]>,
 
+    /// The time the last profile data was printed.
+    #[cfg(feature = "profile")]
+    last_profile_printed: Instant,
+
     /// This allows us to associate a [Game] with the overlay as a whole rather
     /// than having to pass it to each method.
     _marker: PhantomData<G>,
@@ -109,6 +119,8 @@ impl<G: Game> Overlay<G> {
             was_window_focused: false,
             focus_say_input_next_frame: false,
             previous_size: None,
+            #[cfg(feature = "profile")]
+            last_profile_printed: Instant::now(),
             _marker: PhantomData,
         }
     }
@@ -118,8 +130,24 @@ impl<G: Game> Overlay<G> {
     /// We don't store `core` directly in the overlay so that we can ensure that
     /// its mutex is only locked once per render.
     pub fn render(&mut self, ui: &mut Ui, core: &mut G::Core) {
-        self.render_main_window(ui, core);
-        self.render_settings_window(ui);
+        prof!(core.base_mut().profiler(), "AP overlay", {
+            prof!(core.base_mut().profiler(), "main window", {
+                self.render_main_window(ui, core);
+            });
+
+            prof!(core.base_mut().profiler(), "settings window", {
+                self.render_settings_window(ui);
+            });
+        });
+
+        #[cfg(feature = "profile")]
+        {
+            let now = Instant::now();
+            if now.duration_since(self.last_profile_printed) >= TIME_PER_FRAME_PRINT {
+                core.base_mut().profiler().report();
+                self.last_profile_printed = now;
+            }
+        }
     }
 
     /// See [ImguiRenderLoop::before_render], but takes a reference to [Core] as
@@ -146,19 +174,22 @@ impl<G: Game> Overlay<G> {
             return;
         };
 
-        // By default, imgui doesn't remove focus when escape is pressed, even
-        // though it does relinquish its claim to the mouse and keyboard.
-        // Because we use focus to determine when to make the overlay
-        // transparent, we want it to be removed more aggressivley, so we do so
-        // manually.
-        if ui.is_key_pressed(Key::Escape) ||
-            // Also defocus the window any time the player loads into the game.
-            // This ensures that controller players don't have to mess with the
-            // keyboard and mouse just to get the overlay unfocused.
-            (self.was_main_menu && unsafe { !G::is_main_menu() })
-        {
-            unsafe { igSetWindowFocus_Str(ptr::null()) };
-        }
+        prof!(core.base_mut().profiler(), "set focus", {
+            // By default, imgui doesn't remove focus when escape is pressed,
+            // even though it does relinquish its claim to the mouse and
+            // keyboard. Because we use focus to determine when to make the
+            // overlay transparent, we want it to be removed more aggressivley,
+            // so we do so manually.
+            if ui.is_key_pressed(Key::Escape) ||
+                // Also defocus the window any time the player loads into the
+                // game. This ensures that controller players don't have to mess
+                // with the keyboard and mouse just to get the overlay
+                // unfocused.
+                (self.was_main_menu && unsafe { !G::is_main_menu() })
+            {
+                unsafe { igSetWindowFocus_Str(ptr::null()) };
+            }
+        });
 
         let window_opacity = if self.was_window_focused {
             1.0
@@ -215,17 +246,30 @@ impl<G: Game> Overlay<G> {
         let focus_say_input = mem::take(&mut self.focus_say_input_next_frame);
         let collapsed = builder
             .build(|| {
-                self.render_menu_bar(ui);
+                prof!(core.base_mut().profiler(), "menu bar", {
+                    self.render_menu_bar(ui);
+                });
+
                 ui.separator();
-                self.render_log_window(ui, core);
+
+                prof!(core.base_mut().profiler(), "log window", {
+                    self.render_log_window(ui, core);
+                });
+
                 if !is_compact_mode {
                     if core.base().is_disconnected() {
-                        self.render_connection_buttons(ui, core);
+                        prof!(core.base_mut().profiler(), "connection buttons", {
+                            self.render_connection_buttons(ui, core);
+                        });
                     } else {
-                        self.render_say_input(ui, core, focus_say_input);
+                        prof!(core.base_mut().profiler(), "say input", {
+                            self.render_say_input(ui, core, focus_say_input);
+                        });
                     }
                 }
-                self.render_url_modal_popup(ui, core);
+                prof!(core.base_mut().profiler(), "URL modal", {
+                    self.render_url_modal_popup(ui, core);
+                });
 
                 self.was_window_focused =
                     ui.is_window_focused_with_flags(WindowFocusedFlags::ROOT_AND_CHILD_WINDOWS);
