@@ -42,6 +42,8 @@ imgui-sys = { git = "https://github.com/imgui-rs/imgui-rs" }
 
 # Uncomment these to use local copies of dependencies for testing
 
+# archipelago_rs = { path = "../archipelago_rs" }
+
 # [patch."https://github.com/nex3/fromsoftware-rs"]
 # fromsoftware-shared = { path = "../fromsoftware-rs/crates/shared" }
 # darksouls3 = { path = "../fromsoftware-rs/crates/darksouls3" }
